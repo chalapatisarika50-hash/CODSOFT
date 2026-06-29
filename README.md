@@ -10,6 +10,8 @@ This repository contains all projects completed during the CodSoft Data Science 
 
 ### 1. Titanic Survival Prediction
 
+https://titanic-survival-prediction-seven.vercel.app/
+
 Predict passenger survival using historical Titanic passenger data.
 
 #### Features
@@ -35,6 +37,8 @@ Predict passenger survival using historical Titanic passenger data.
 
 Predict movie ratings using machine learning based on movie attributes and historical rating data.
 
+https://movie-rating-prediction-three.vercel.app/
+
 #### Features
 - Data Analysis and Visualization
 - Data Preprocessing
@@ -56,6 +60,8 @@ Predict movie ratings using machine learning based on movie attributes and histo
 ### 3. Iris Flower Classification
 
 Classify Iris flower species using sepal and petal measurements.
+
+https://iris-flower-classification-orpin.vercel.app/
 
 #### Features
 - Data Exploration
