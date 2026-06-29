@@ -1,0 +1,6 @@
+{
+  "name": "Titanic Survival Prediction",
+  "description": "A clean and professional Data Science submission demonstrating comparative ML classifiers on the Titanic dataset.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Titanic Survival Prediction - Flask App</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Titanic Survival Prediction</h1>
+            <p class="subtitle">Predict whether a passenger would likely survive the Titanic disaster using a machine learning model trained on historical passenger data.</p>
+        </header>
+
+        <main class="grid">
+            <!-- Prediction Form -->
+            <section class="card form-card">
+                <h2>Passenger Features</h2>
+                <form id="prediction-form">
+                    <div class="form-group">
+                        <label for="age">Age (Years)</label>
+                        <input type="number" id="age" name="age" min="1" max="100" value="28" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="sex">Gender</label>
+                        <select id="sex" name="sex" required>
+                            <option value="male">Male</option>
+                            <option value="female" selected>Female</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="pclass">Passenger Class (Pclass)</label>
+                        <select id="pclass" name="pclass" required>
+                            <option value="1">1st Class (Elite)</option>
+                            <option value="2">2nd Class (Middle)</option>
+                            <option value="3" selected>3rd Class (Economy)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fare">Ticket Fare ($)</label>
+                        <input type="number" id="fare" name="fare" min="0" max="512" value="15" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="family_members">Number of Family Members Onboard</label>
+                        <input type="number" id="family_members" name="family_members" min="0" max="15" value="0" required>
+                    </div>
+
+                    <div class="button-group">
+                        <button type="button" id="btn-predict" class="btn btn-primary">Predict Survival</button>
+                        <button type="button" id="btn-sample" class="btn btn-secondary">Load Sample Passenger</button>
+                        <button type="button" id="btn-reset" class="btn btn-outline">Reset Form</button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Results Section -->
+            <section class="card results-card">
+                <h2>Prediction Result</h2>
+                <div id="welcome-message" class="state-message">
+                    <p>Configure passenger features and click <strong>Predict Survival</strong> to see classification outcomes from the ML model.</p>
+                </div>
+                <div id="results-display" class="hidden">
+                    <div id="status-badge" class="badge"></div>
+                    <div class="confidence-container">
+                        <span class="label">Confidence Score:</span>
+                        <span id="confidence-percentage" class="percentage">75%</span>
+                    </div>
+                    <p id="verdict-explanation" class="explanation"></p>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>CodSoft Data Science InternshipSubmission • Powered by Python & Flask</p>
+        </footer>
+    </div>
+
+    <script>
+        const samples = [
+            { age: 32, sex: "female", pclass: 1, fare: 150, family_members: 1 },
+            { age: 28, sex: "male", pclass: 3, fare: 8, family_members: 0 },
+            { age: 4, sex: "male", pclass: 2, fare: 26, family_members: 1 },
+            { age: 22, sex: "female", pclass: 1, fare: 85, family_members: 0 }
+        ];
+
+        let curSampleIndex = 0;
+
+        document.getElementById("btn-sample").addEventListener("click", () => {
+            const sample = samples[curSampleIndex];
+            document.getElementById("age").value = sample.age;
+            document.getElementById("sex").value = sample.sex;
+            document.getElementById("pclass").value = sample.pclass;
+            document.getElementById("fare").value = sample.fare;
+            document.getElementById("family_members").value = sample.family_members;
+            
+            curSampleIndex = (curSampleIndex + 1) % samples.length;
+        });
+
+        document.getElementById("btn-reset").addEventListener("click", () => {
+            document.getElementById("age").value = 28;
+            document.getElementById("sex").value = "female";
+            document.getElementById("pclass").value = 3;
+            document.getElementById("fare").value = 15;
+            document.getElementById("family_members").value = 0;
+            
+            document.getElementById("welcome-message").classList.remove("hidden");
+            document.getElementById("results-display").classList.add("hidden");
+        });
+
+        document.getElementById("btn-predict").addEventListener("click", async () => {
+            const data = {
+                age: parseFloat(document.getElementById("age").value),
+                sex: document.getElementById("sex").value,
+                pclass: parseInt(document.getElementById("pclass").value),
+                fare: parseFloat(document.getElementById("fare").value),
+                family_members: parseInt(document.getElementById("family_members").value)
+            };
+
+            try {
+                const response = await fetch("/predict", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    document.getElementById("welcome-message").classList.add("hidden");
+                    const resultsDisplay = document.getElementById("results-display");
+                    resultsDisplay.classList.remove("hidden");
+
+                    const badge = document.getElementById("status-badge");
+                    if (result.survived) {
+                        badge.className = "badge survived";
+                        badge.innerHTML = "Survived ✅";
+                    } else {
+                        badge.className = "badge deceased";
+                        badge.innerHTML = "Did Not Survive ❌";
+                    }
+
+                    document.getElementById("confidence-percentage").innerText = result.confidence + "%";
+                    
+                    let explanation = "";
+                    if (result.survived) {
+                        explanation = `Based on historical manifest training data, passengers matching this profile (particularly ${data.sex === "female" ? "female travelers" : "young children"} and higher class passengers with premium fares) had a high likelihood of getting rescued.`;
+                    } else {
+                        explanation = `Based on historical manifest training data, passengers matching this profile (typically adult males or third-class passengers in deep compartments) had low priority or accessibility to the limited number of lifeboats.`;
+                    }
+                    document.getElementById("verdict-explanation").innerText = explanation;
+                }
+            } catch (err) {
+                alert("Error calling prediction API: " + err.message);
+            }
+        });
+    </script>
+</body>
+</html>
